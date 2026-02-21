@@ -1,0 +1,6 @@
+feat(init): scaffold job tracker monorepo
+
+- add Next.js web scaffold
+- add FastAPI api scaffold
+- add env examples and docker postgres
+- add README and project structure

@@ -1,22 +1,31 @@
 # Job Tracker MVP
 
-Monorepo for a job application tracker.
+I built this to stop tracking job applications in a messy spreadsheet. It's a simple, clean app to manage my job hunt pipeline.
+
+## What it does
+- Register / login (JWT auth)
+- Add, edit, delete job applications
+- Filter by status, search by company or role
+- Dashboard with pipeline stats at a glance
 
 ## Stack
-- Frontend: Next.js + TypeScript + Tailwind CSS
-- Backend: FastAPI + SQLAlchemy
-- Database: PostgreSQL
-- Deploy: Vercel (web) + Railway (api/db)
+- **Frontend:** Next.js 15 + TypeScript + Tailwind CSS
+- **Backend:** FastAPI + SQLAlchemy + Alembic
+- **Database:** PostgreSQL 16
+- **Deploy:** Vercel (frontend) + Railway (backend + DB)
 
-## Structure
-- `apps/web` - Next.js frontend
-- `apps/api` - FastAPI backend
+## Project structure
+```
+apps/web    — Next.js frontend
+apps/api    — FastAPI backend
+docs/       — PRD, data dictionary, user flows, execution plan
+```
 
-## Week 1-2 MVP
-- JWT auth (register/login)
-- Job application CRUD
-- Filter/search by status
-- Dashboard stats
+## Docs
+- [PRD](docs/PRD_v1.md) — what I'm building and why
+- [Data Dictionary](docs/DATA_DICTIONARY.md) — tables, fields, status enum
+- [User Flow](docs/USER_FLOW.md) — pages, routes, API endpoints
+- [Plan](docs/PLAN.md) — 14-day execution plan
 
 ## Local quick start
 

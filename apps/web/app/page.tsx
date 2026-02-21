@@ -1,8 +1,16 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getToken } from "@/lib/api";
+
+// root page — redirect to dashboard or login
 export default function Home() {
-  return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold">Job Tracker MVP</h1>
-      <p className="mt-3 text-gray-600">Frontend scaffold is ready.</p>
-    </main>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace(getToken() ? "/dashboard" : "/login");
+  }, [router]);
+
+  return null;
 }

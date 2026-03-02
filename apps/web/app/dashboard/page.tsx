@@ -7,6 +7,8 @@ import {
   listJobs,
   getJobStats,
   deleteJob,
+  updateJob,
+  exportCsv,
   type Job,
   type JobStats,
   type JobStatus,
@@ -14,7 +16,10 @@ import {
 import StatCard from "@/components/stat-card";
 import StatusBadge from "@/components/status-badge";
 import ConfirmDialog from "@/components/confirm-dialog";
+import KanbanBoard from "@/components/kanban-board";
 import { STATUS_OPTIONS } from "@/lib/constants";
+
+type ViewMode = "list" | "kanban";
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuthGuard();
@@ -25,6 +30,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<Job | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [view, setView] = useState<ViewMode>("list");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const fetchData = useCallback(
@@ -41,7 +47,7 @@ export default function DashboardPage() {
         setJobs(jobList);
         setStats(jobStats);
       } catch {
-        // if auth fails, the guard will redirect
+        // auth guard handles redirect
       } finally {
         setLoading(false);
       }
@@ -53,7 +59,6 @@ export default function DashboardPage() {
     if (user) fetchData(statusFilter, query);
   }, [user, statusFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // debounced search
   function handleSearch(value: string) {
     setQuery(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -76,20 +81,34 @@ export default function DashboardPage() {
     }
   }
 
+  async function handleKanbanStatusChange(jobId: string, newStatus: JobStatus) {
+    await updateJob(jobId, { status: newStatus });
+    fetchData(statusFilter, query);
+  }
+
   if (authLoading) {
     return <p className="mt-20 text-center text-gray-400">Loading...</p>;
   }
 
   return (
     <div>
+      {/* header row */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <Link
-          href="/jobs/new"
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          + Add Application
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => exportCsv()}
+            className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50"
+          >
+            ↓ Export CSV
+          </button>
+          <Link
+            href="/jobs/new"
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            + Add Application
+          </Link>
+        </div>
       </div>
 
       {/* stat cards */}
@@ -103,8 +122,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* filters */}
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+      {/* filters + view toggle */}
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as JobStatus | "")}
@@ -124,9 +143,23 @@ export default function DashboardPage() {
           onChange={(e) => handleSearch(e.target.value)}
           className="flex-1 rounded-md border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
+        <div className="flex rounded-md border text-sm">
+          <button
+            onClick={() => setView("list")}
+            className={`px-3 py-2 ${view === "list" ? "bg-gray-100 font-medium" : ""}`}
+          >
+            List
+          </button>
+          <button
+            onClick={() => setView("kanban")}
+            className={`px-3 py-2 ${view === "kanban" ? "bg-gray-100 font-medium" : ""}`}
+          >
+            Kanban
+          </button>
+        </div>
       </div>
 
-      {/* job list */}
+      {/* content */}
       {loading ? (
         <p className="mt-8 text-center text-gray-400">Loading jobs...</p>
       ) : jobs.length === 0 ? (
@@ -138,6 +171,10 @@ export default function DashboardPage() {
           >
             Add your first one →
           </Link>
+        </div>
+      ) : view === "kanban" ? (
+        <div className="mt-4">
+          <KanbanBoard jobs={jobs} onStatusChange={handleKanbanStatusChange} />
         </div>
       ) : (
         <div className="mt-4 overflow-x-auto">

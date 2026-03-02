@@ -155,3 +155,19 @@ export async function deleteJob(id: string) {
 export async function getJobStats() {
   return request<JobStats>("/api/jobs/stats");
 }
+
+export async function exportCsv() {
+  const token = getToken();
+  const res = await fetch(
+    `${BASE}/api/export/csv`,
+    token ? { headers: { Authorization: `Bearer ${token}` } } : {},
+  );
+  if (!res.ok) throw new ApiError(res.status, "Export failed");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "job_applications.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,6 +14,18 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
+
+    @property
+    def db_url(self) -> str:
+        """Normalize DATABASE_URL for SQLAlchemy.
+
+        Railway sometimes gives postgres:// but SQLAlchemy needs postgresql+psycopg2://
+        """
+        url = self.DATABASE_URL
+        url = re.sub(r"^postgres://", "postgresql+psycopg2://", url)
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return url
 
     @property
     def cors_origins(self) -> List[str]:
